@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Lock, Mail, User, Shield, ChevronRight, Eye, EyeOff, Activity } from 'lucide-react';
 import { NetworkBackground } from '../components/NetworkBackground';
+import { API_URL } from '../config/api';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const Signup = () => {
     setIsError(false);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -57,7 +58,7 @@ const Signup = () => {
     setIsError(false);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/verify-otp', {
+      const response = await fetch(`${API_URL}/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, otp }),

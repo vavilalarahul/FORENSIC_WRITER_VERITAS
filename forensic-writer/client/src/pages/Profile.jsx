@@ -176,7 +176,7 @@ const Profile = () => {
         }
         if (currentAvatar && currentAvatar.startsWith('/uploads/')) {
             return (
-                <img src={`http://localhost:5000${currentAvatar}`} alt="Avatar"
+                <img src={`${API_URL.replace('/api', '')}${currentAvatar}`} alt="Avatar"
                     style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(255,255,255,0.4)', flexShrink: 0 }} />
             );
         }

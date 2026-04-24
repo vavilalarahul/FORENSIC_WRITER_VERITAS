@@ -6,8 +6,9 @@
 
 import { useState } from "react";
 import axios from "axios";
+import { API_URL } from '../config/api';
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = API_URL;
 
 export default function EvidenceUpload({ caseId, investigatorName }) {
   const [imageFile,  setImageFile]  = useState(null);

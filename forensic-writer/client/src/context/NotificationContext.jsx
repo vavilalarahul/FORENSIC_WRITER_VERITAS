@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { io } from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
+import { API_URL } from '../config/api';
 
 const NotificationContext = createContext();
 
@@ -22,8 +23,6 @@ export const NotificationProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
 
-  const API_URL = 'http://localhost:5000/api';
-
   const getHeaders = () => {
     const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
     return { Authorization: `Bearer ${token}` };
@@ -33,7 +32,7 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
     if (token) {
-      const newSocket = io('http://localhost:5000', {
+      const newSocket = io(API_URL.replace('/api', ''), {
         auth: { token },
         transports: ['websocket']
       });
