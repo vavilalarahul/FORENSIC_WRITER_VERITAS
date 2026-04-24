@@ -24,9 +24,6 @@ const RoleBasedNavigation = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
     
-    console.log("[RoleBasedNavigation] User:", user);
-    console.log("[RoleBasedNavigation] User role:", user?.role);
-    
     const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
     const handleLogout = () => {

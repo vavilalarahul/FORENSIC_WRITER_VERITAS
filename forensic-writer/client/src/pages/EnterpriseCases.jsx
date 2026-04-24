@@ -18,10 +18,8 @@ const EnterpriseCases = () => {
     const [cases, setCases] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
         const fetchCases = async () => {
             try {
                 const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
@@ -40,14 +38,6 @@ const EnterpriseCases = () => {
 
         fetchCases();
     }, []);
-
-    if (!mounted) {
-        return (
-            <div className="min-h-[400px] flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
-    }
 
     if (loading) {
         return (
@@ -135,14 +125,13 @@ Date: ${new Date().toLocaleDateString()}
         }
 
         try {
-            await axios.delete(`${API_URL}/cases/${caseId}`);
-            
-            // Remove case from local state
+            const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
+            await axios.delete(`${API_URL}/cases/${caseId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             setCases(cases.filter(c => c._id !== caseId));
-            console.log('Case deleted successfully');
         } catch (error) {
             console.error('Delete case error:', error);
-            // For demo purposes, still remove from local state even if API fails
             setCases(cases.filter(c => c._id !== caseId));
         }
     };

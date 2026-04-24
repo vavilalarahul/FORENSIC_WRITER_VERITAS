@@ -11,7 +11,6 @@ const EnterpriseNewCase = () => {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [mounted, setMounted] = useState(false);
     const [formData, setFormData] = useState({
         caseName: '',
         caseId: `FW-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -19,10 +18,6 @@ const EnterpriseNewCase = () => {
         date: new Date().toISOString().split('T')[0],
         notes: ''
     });
-
-    React.useEffect(() => {
-        setMounted(true);
-    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -48,14 +43,6 @@ const EnterpriseNewCase = () => {
             setLoading(false);
         }
     };
-
-    if (!mounted) {
-        return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
-    }
 
     return (
         <div className="space-y-6 animate-fadeInUp">

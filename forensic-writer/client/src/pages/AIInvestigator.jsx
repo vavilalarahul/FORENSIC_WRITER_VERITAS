@@ -316,7 +316,9 @@ const AIInvestigator = () => {
                 },
                 reportUrl: analysis.reportUrl,
                 reportFileName: analysis.reportFileName,
-                files: analysis.files
+                files: analysis.files,
+                llmReport: analysis.llmReport || null,
+                imageResults: analysis.imageResults || [],
             });
 
             setIsAnalyzing(false);
@@ -869,7 +871,7 @@ const AIInvestigator = () => {
 
                             {/* Tabs */}
                             <div className="flex gap-2 mb-4 border-b border-gray-800">
-                                {['summary', 'details'].map((tab) => (
+                                {['summary', 'details', 'images', 'report'].map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
@@ -879,7 +881,7 @@ const AIInvestigator = () => {
                                                 : 'text-gray-400 border-transparent hover:text-gray-300'
                                         }`}
                                     >
-                                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                        {tab === 'images' ? '🖼 Images' : tab === 'report' ? '🤖 AI Report' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                                     </button>
                                 ))}
                             </div>
@@ -889,17 +891,14 @@ const AIInvestigator = () => {
                                 <div className="space-y-4">
                                     <div>
                                         <h4 className="text-sm font-semibold text-white mb-2">Summary</h4>
-                                        <p className="text-xs text-gray-300 leading-relaxed">
-                                            {analysisResults.summary}
-                                        </p>
+                                        <p className="text-xs text-gray-300 leading-relaxed">{analysisResults.summary}</p>
                                     </div>
                                     <div>
                                         <h4 className="text-sm font-semibold text-white mb-2">Key Findings</h4>
                                         <ul className="text-xs text-gray-300 space-y-1">
                                             {analysisResults.observations?.map((obs, i) => (
                                                 <li key={i} className="flex items-start gap-2">
-                                                    <span className="w-1 h-1 bg-blue-400 rounded-full mt-1.5 flex-shrink-0" />
-                                                    {obs}
+                                                    <span className="w-1 h-1 bg-blue-400 rounded-full mt-1.5 flex-shrink-0" />{obs}
                                                 </li>
                                             ))}
                                         </ul>
@@ -910,30 +909,12 @@ const AIInvestigator = () => {
                             {activeTab === 'details' && (
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <p className="text-xs text-gray-400">Processing Time</p>
-                                            <p className="text-sm font-medium text-white">
-                                                {analysisResults.processing_time}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-400">Confidence Score</p>
-                                            <p className="text-sm font-medium text-white">
-                                                {analysisResults.confidence}%
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-400">Files Analyzed</p>
-                                            <p className="text-sm font-medium text-white">
-                                                {selectedEvidence.length}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-400">Hash Algorithm</p>
-                                            <p className="text-sm font-medium text-white">SHA-256</p>
-                                        </div>
+                                        <div><p className="text-xs text-gray-400">Processing Time</p><p className="text-sm font-medium text-white">{analysisResults.processing_time}</p></div>
+                                        <div><p className="text-xs text-gray-400">Confidence Score</p><p className="text-sm font-medium text-white">{analysisResults.confidence?.toFixed(1)}%</p></div>
+                                        <div><p className="text-xs text-gray-400">Files Analyzed</p><p className="text-sm font-medium text-white">{selectedEvidence.length}</p></div>
+                                        <div><p className="text-xs text-gray-400">Hash Algorithm</p><p className="text-sm font-medium text-white">SHA-256</p></div>
                                     </div>
-                                    {analysisResults.files && analysisResults.files.length > 0 && (
+                                    {analysisResults.files?.length > 0 && (
                                         <div>
                                             <h4 className="text-sm font-semibold text-white mb-2">Analyzed Files</h4>
                                             <div className="space-y-2">
@@ -941,19 +922,81 @@ const AIInvestigator = () => {
                                                     <div key={i} className="p-2 bg-gray-800/50 rounded text-xs">
                                                         <div className="flex justify-between">
                                                             <span className="text-white">{file.fileName}</span>
-                                                            <span className="text-gray-400">{file.confidence.toFixed(1)}%</span>
+                                                            <span className="text-gray-400">{file.confidence?.toFixed(1)}%</span>
                                                         </div>
-                                                        <div className="text-gray-500 mt-1">
-                                                            Hash: {file.hash.substring(0, 32)}...
-                                                        </div>
-                                                        {file.anomalies && file.anomalies.length > 0 && (
-                                                            <div className="mt-1 text-red-400">
-                                                                {file.anomalies.length} anomaly(ies)
-                                                            </div>
-                                                        )}
+                                                        <div className="text-gray-500 mt-1">Hash: {file.hash?.substring(0, 32)}...</div>
+                                                        {file.anomalies?.length > 0 && <div className="mt-1 text-red-400">{file.anomalies.length} anomaly(ies)</div>}
                                                     </div>
                                                 ))}
                                             </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === 'images' && (
+                                <div className="space-y-3">
+                                    {analysisResults.imageResults?.length > 0 ? (
+                                        analysisResults.imageResults.map((img, i) => (
+                                            <div key={i} className="p-3 bg-gray-800/50 rounded-xl border border-gray-700 space-y-2">
+                                                <p className="text-xs font-bold text-white">{img.fileName}</p>
+                                                <p className="text-xs text-gray-400 leading-relaxed">{img.forensicSummary}</p>
+                                                {img.sceneLabels?.length > 0 && (
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Scene</p>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {img.sceneLabels.slice(0, 3).map((s, j) => (
+                                                                <span key={j} className="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[10px]">
+                                                                    {s.label} {(s.score * 100).toFixed(0)}%
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {img.detectedObjects?.length > 0 && (
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Objects</p>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {img.detectedObjects.slice(0, 5).map((o, j) => (
+                                                                <span key={j} className="px-2 py-0.5 bg-green-500/10 text-green-400 border border-green-500/20 rounded text-[10px]">
+                                                                    {o.label} {(o.score * 100).toFixed(0)}%
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {img.riskIndicators?.length > 0 && (
+                                                    <div className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/20 rounded">
+                                                        <span className="text-xs text-red-400 font-semibold">⚠ Risk: {img.riskIndicators.join(', ')}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-8 text-gray-500">
+                                            <p className="text-sm">No image evidence was analyzed</p>
+                                            <p className="text-xs mt-1">Upload images in the Evidence section to see AI analysis here</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === 'report' && (
+                                <div className="space-y-3">
+                                    {analysisResults.llmReport ? (
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <span className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-1 rounded font-bold">LLaMA-3.1-8B</span>
+                                                <span className="text-xs text-gray-500">Generated by HuggingFace</span>
+                                            </div>
+                                            <div className="p-4 bg-gray-800/50 rounded-xl border border-gray-700">
+                                                <p className="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap">{analysisResults.llmReport}</p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 text-gray-500">
+                                            <p className="text-sm">LLM report not available</p>
+                                            <p className="text-xs mt-1">Ensure HUGGINGFACE_API_KEY is set and LLaMA access is granted</p>
                                         </div>
                                     )}
                                 </div>

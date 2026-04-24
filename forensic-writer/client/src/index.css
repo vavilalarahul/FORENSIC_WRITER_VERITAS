@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -376,12 +376,11 @@ input::-ms-clear {
 
 /* Prevent horizontal overflow */
 body {
-  overflow-x: hidden;
   min-height: 100vh;
 }
 
 html {
-  overflow-x: hidden;
+  /* overflow-x: hidden removed — breaks sticky horizontal scroll sections */
 }
 
 /* Ensure all containers handle overflow properly */
@@ -391,7 +390,6 @@ html {
 
 .flex-1 {
   min-width: 0;
-  overflow-x: hidden;
 }
 
 /* Text overflow handling */
@@ -2173,7 +2171,7 @@ body {
 
 /* Global Dropdown Fixes */
 body, html {
-  overflow-x: hidden;
+  /* overflow-x: hidden removed — breaks sticky scroll sections */
 }
 
 /* Ensure dropdowns are always visible */

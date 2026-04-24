@@ -1,6 +1,44 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios');
+const { analyzeImage, isImage } = require('./imageAnalysisService');
+
+const HF_TOKEN = process.env.HF_API_KEY;
+
+/**
+ * Generate forensic report narrative using LLaMA 3.1 via HuggingFace
+ */
+async function generateLLMReport(evidenceSummary, anomalies, caseContext) {
+  if (!HF_TOKEN) return null;
+
+  const prompt = `You are a professional forensic analyst. Write a concise, court-ready forensic investigation report based on the following evidence analysis.
+
+Case Context: ${caseContext}
+
+Evidence Analyzed:
+${evidenceSummary}
+
+Anomalies Detected:
+${anomalies.map((a, i) => `${i + 1}. [${a.severity}] ${a.type}: ${a.description}`).join('\n')}
+
+Write a structured report with: Summary, Key Findings, Risk Assessment, and Recommendations. Be factual and professional.`;
+
+  try {
+    const res = await axios.post(
+      'https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct',
+      {
+        inputs: prompt,
+        parameters: { max_new_tokens: 800, temperature: 0.3, return_full_text: false },
+      },
+      { headers: { Authorization: `Bearer ${HF_TOKEN}`, 'Content-Type': 'application/json' }, timeout: 60000 }
+    );
+    return res.data?.[0]?.generated_text || null;
+  } catch (err) {
+    // LLM is optional — fall back gracefully
+    return null;
+  }
+}
 
 /**
  * AI Forensic Analysis Service
@@ -205,6 +243,7 @@ class AIAnalysisService {
             totalAnomalies: [],
             overallConfidence: 0,
             processingTime: 0,
+            llmReport: null,
             startTime: Date.now()
         };
 
@@ -212,29 +251,29 @@ class AIAnalysisService {
             for (let i = 0; i < evidenceFiles.length; i++) {
                 const file = evidenceFiles[i];
                 const progress = Math.round(((i + 1) / evidenceFiles.length) * 100);
-                
+
                 if (onProgress) {
-                    onProgress({
-                        stage: 'Processing',
-                        file: file.fileName,
-                        progress: progress,
-                        message: `Analyzing ${file.fileName}...`
-                    });
+                    onProgress({ stage: 'Processing', file: file.fileName, progress, message: `Analyzing ${file.fileName}...` });
                 }
 
-                // Simulate processing time for realism
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
 
-                // Extract content
                 const fileType = this.detectFileType(file.fileName, file.fileType);
                 let contentResult = { content: '', hash: '' };
-                
-                // Check if file has a real path or is just metadata
-                if (file.filePath && fs.existsSync(file.filePath)) {
+                let imageAnalysis = null;
+
+                const hasRealFile = file.filePath && fs.existsSync(file.filePath);
+
+                // Image analysis via HuggingFace
+                if (isImage(file.fileName) && hasRealFile) {
+                    if (onProgress) onProgress({ stage: 'Image Analysis', file: file.fileName, progress, message: `Running AI image analysis on ${file.fileName}...` });
+                    imageAnalysis = await analyzeImage(file.filePath, file.fileName);
+                    const dummyBuffer = fs.readFileSync(file.filePath);
+                    contentResult = { content: imageAnalysis.forensicSummary, hash: this.generateHash(dummyBuffer), size: dummyBuffer.length };
+                } else if (hasRealFile) {
                     contentResult = await this.extractContent(file.filePath, fileType);
                 } else {
-                    // Generate hash from metadata if file doesn't exist
-                    const dummyBuffer = Buffer.from(file.fileName + file.fileType);
+                    const dummyBuffer = Buffer.from(file.fileName + (file.fileType || ''));
                     contentResult = {
                         content: `[${fileType.toUpperCase()} FILE] ${file.fileName}`,
                         hash: this.generateHash(dummyBuffer),
@@ -242,37 +281,48 @@ class AIAnalysisService {
                     };
                 }
 
-                // Detect anomalies
                 const anomalies = this.detectAnomalies(contentResult.content, fileType);
+
+                // Add image risk indicators as anomalies
+                if (imageAnalysis && imageAnalysis.riskIndicators.length > 0) {
+                    imageAnalysis.riskIndicators.forEach(risk => {
+                        anomalies.push({
+                            type: 'Image Risk Indicator',
+                            keyword: risk,
+                            count: 1,
+                            severity: 'HIGH',
+                            description: `Image contains potential risk indicator: "${risk}"`
+                        });
+                    });
+                }
 
                 results.files.push({
                     fileName: file.fileName,
                     fileType: fileType,
                     fileSize: contentResult.size,
                     hash: contentResult.hash,
-                    anomalies: anomalies,
-                    confidence: this.calculateConfidence(anomalies),
+                    anomalies,
+                    confidence: imageAnalysis ? imageAnalysis.confidence : this.calculateConfidence(anomalies),
+                    imageAnalysis: imageAnalysis || null,
                     processedAt: new Date().toISOString()
                 });
 
                 results.totalAnomalies.push(...anomalies);
             }
 
-            // Calculate overall confidence
             results.overallConfidence = this.calculateConfidence(results.totalAnomalies);
             results.processingTime = ((Date.now() - results.startTime) / 1000).toFixed(2);
 
-            if (onProgress) {
-                onProgress({
-                    stage: 'Complete',
-                    progress: 100,
-                    message: 'Analysis complete'
-                });
-            }
+            // Generate LLM narrative report
+            if (onProgress) onProgress({ stage: 'LLM Report', progress: 95, message: 'Generating AI narrative report...' });
+            const evidenceSummary = results.files.map(f => `- ${f.fileName} (${f.fileType}, ${f.fileSize} bytes, hash: ${f.hash?.substring(0, 16)}...)`).join('\n');
+            const caseContext = `${results.files.length} evidence file(s) analyzed`;
+            results.llmReport = await generateLLMReport(evidenceSummary, results.totalAnomalies, caseContext);
+
+            if (onProgress) onProgress({ stage: 'Complete', progress: 100, message: 'Analysis complete' });
 
             return results;
         } catch (error) {
-            console.error('Analysis error:', error);
             throw error;
         }
     }

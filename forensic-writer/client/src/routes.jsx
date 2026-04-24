@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Cases from './pages/EnterpriseCases';
 import EnterpriseLayout from './components/EnterpriseLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import LandingPage from './pages/LandingPage';
 
 // Auth Pages
 const Login = React.lazy(() => import('./pages/Login'));
@@ -58,7 +59,7 @@ const RoutesConfig = ({ routeKey }) => {
         <Suspense fallback={<PageLoader />}>
             <Routes>
                 {/* 🎯 Auth Routes */}
-                <Route path="/" element={<SmartRedirect />} />
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
 

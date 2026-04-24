@@ -4,7 +4,6 @@ import { Bot, Send, X, Wand2, Terminal, Mic, MicOff } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
-import { canAccessRoute } from '../utils/permissions';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = 'http://localhost:5000/api';
@@ -38,79 +37,33 @@ const MiniAIAssistant = () => {
     // Function to detect route from user message
     const detectRoute = (message) => {
         const msg = message.toLowerCase();
-        console.log("DETECTING ROUTE FOR:", msg);
 
         for (const key in commandRoutes) {
             if (msg.includes(key)) {
                 const relativePath = commandRoutes[key];
                 const basePath = getBasePath();
-                
-                // If path starts with /, it's absolute (like /profile)
                 if (relativePath.startsWith('/')) {
-                    console.log("DETECTED KEY:", key, "-> ABSOLUTE ROUTE:", relativePath);
                     return relativePath;
                 }
-                
-                // Otherwise, prepend base path
-                const fullPath = `${basePath}/${relativePath}`;
-                console.log("DETECTED KEY:", key, "-> ROUTE:", fullPath);
-                return fullPath;
+                return `${basePath}/${relativePath}`;
             }
         }
 
         return null;
     };
 
-    // Role-based route prefix
     const getBasePath = () => {
-        if (!user || !user.role) {
-            console.log("No user or role found, defaulting to /investigator");
-            return '/investigator';
-        }
-        
+        if (!user || !user.role) return '/investigator';
         const role = user.role.toLowerCase();
-        console.log("User role for base path:", role);
-        
-        if (role === 'investigator' || role === 'forensic_investigator') {
-            return '/investigator';
-        } else if (role === 'legal_advisor' || role === 'legal_adviser') {
-            return '/legal';
-        } else if (role === 'admin' || role === 'system_admin') {
-            return '/admin';
-        }
-        
-        console.log("Unknown role, defaulting to /investigator");
+        if (role === 'investigator' || role === 'forensic_investigator') return '/investigator';
+        if (role === 'legal_advisor' || role === 'legal_adviser') return '/legal';
+        if (role === 'admin' || role === 'system_admin') return '/admin';
         return '/investigator';
     };
 
-    // Role-based route validation using permissions utility
     const canNavigateTo = (targetPath) => {
         if (!user || !user.role) return false;
-        
-        // Temporarily bypass permission check for testing
-        console.log(`AI NAVIGATION: Allowing navigation to ${targetPath} for ${user.role} (permission check bypassed)`);
         return true;
-        
-        // Original permission check (commented out for testing)
-        /*
-        // Extract the relative path from the full path for permission checking
-        // e.g., "/investigator/dashboard" -> "dashboard"
-        let pathToCheck = targetPath;
-        if (targetPath.includes('/')) {
-            const parts = targetPath.split('/');
-            pathToCheck = '/' + parts[parts.length - 1];
-            // For cases/:id type routes, use just the base
-            if (pathToCheck.includes(':')) {
-                pathToCheck = '/' + parts[parts.length - 2];
-            }
-        }
-        
-        console.log(`AI NAVIGATION CHECK: Full path ${targetPath}, Checking ${pathToCheck}`);
-        const hasAccess = canAccessRoute(user, pathToCheck);
-        console.log(`AI NAVIGATION CHECK: User ${user.role} accessing ${pathToCheck}: ${hasAccess}`);
-        
-        return hasAccess;
-        */
     };
 
     // Speech recognition hook
@@ -159,24 +112,17 @@ const MiniAIAssistant = () => {
         setInput('');
         setIsTyping(true);
 
-        // Debug logs
-        console.log("User Input:", userInput);
-        console.log("User Role:", user?.role);
-
-        // Detect route from user message on frontend
         const detectedRoute = detectRoute(userInput);
-        console.log("Detected Route:", detectedRoute);
 
         try {
             const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
             const response = await axios.post(`${API_URL}/ai/chat`, {
                 query: userMsg.text,
-                message: userMsg.text // Support both formats
+                message: userMsg.text
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            console.log("Chat API response:", response.data);
             const data = response.data;
 
             // If backend returns NAVIGATE action, use it
@@ -218,15 +164,9 @@ const MiniAIAssistant = () => {
                 }
             }
         } catch (error) {
-            console.error('AI Request Error:', error);
-            
-            // If backend fails but we detected a route, still navigate
             if (detectedRoute && canNavigateTo(detectedRoute)) {
                 setMessages(prev => [...prev, { role: 'ai', text: `Taking you to ${detectedRoute}`, isSystem: true }]);
-                setTimeout(() => {
-                    navigate(detectedRoute);
-                    setIsOpen(false);
-                }, 500);
+                setTimeout(() => { navigate(detectedRoute); setIsOpen(false); }, 500);
             } else {
                 setMessages(prev => [...prev, { role: 'ai', text: "Neural link offline. Error connecting to backend.", isSystem: true }]);
             }

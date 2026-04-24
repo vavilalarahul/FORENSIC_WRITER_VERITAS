@@ -151,8 +151,9 @@ const analyzeCase = async (req, res) => {
             analysisId: `AI-${Date.now()}`,
             timestamp: new Date().toISOString(),
             summary: `Forensic analysis completed successfully. ${summary.totalAnomalies} anomaly(ies) detected across ${summary.totalFiles} file(s).`,
-            introduction: `This forensic analysis was conducted using advanced AI techniques including hash verification, content extraction, and anomaly detection algorithms.`,
+            introduction: `This forensic analysis was conducted using advanced AI techniques including hash verification, content extraction, HuggingFace image recognition, and LLaMA-3.1 report generation.`,
             evidence_summary: `The neural engine analyzed ${summary.totalFiles} evidence artifacts using SHA-256 hash verification and pattern recognition protocols.`,
+            llmReport: analysisResult.llmReport || null,
             timeline: `Analysis completed in ${analysisResult.processingTime}s with ${summary.totalAnomalies} anomalies detected.`,
             observations: `Analysis revealed ${summary.severityBreakdown.HIGH} high-severity, ${summary.severityBreakdown.MEDIUM} medium-severity, and ${summary.severityBreakdown.LOW} low-severity findings.`,
             conclusions: `The evidence indicates ${summary.riskLevel.toLowerCase()} risk level. Confidence score: ${summary.overallConfidence.toFixed(1)}%.`,
@@ -164,6 +165,16 @@ const analyzeCase = async (req, res) => {
                 confidence: a.severity === 'HIGH' ? 0.95 : a.severity === 'MEDIUM' ? 0.85 : 0.75,
                 evidence: [a.keyword || 'File analysis']
             })),
+            imageResults: analysisResult.files
+                .filter(f => f.imageAnalysis)
+                .map(f => ({
+                    fileName: f.fileName,
+                    sceneLabels: f.imageAnalysis.sceneLabels,
+                    detectedObjects: f.imageAnalysis.detectedObjects,
+                    forensicSummary: f.imageAnalysis.forensicSummary,
+                    riskIndicators: f.imageAnalysis.riskIndicators,
+                    confidence: f.imageAnalysis.confidence,
+                })),
             riskLevel: summary.riskLevel,
             recommendations: [
                 summary.highSeverity > 0 ? 'Immediate investigation required for high-severity anomalies' : 'Monitor for any unusual activity',

@@ -14,13 +14,14 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const caseAssignmentRoutes = require('./routes/caseAssignmentRoutes');
 const reportVaultRoutes = require('./routes/reportVaultRoutes');
 const { router: messageRoutes } = require('./routes/simpleMessageRoutes');
+const imageAnalysisRoutes = require('./routes/imageAnalysis');
 
 const app = express();
 
 // Middleware
 app.use(express.json());
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
     credentials: true
 }));
 app.use(helmet({
@@ -36,6 +37,7 @@ app.use('/api/evidence', evidenceRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/analyze', imageAnalysisRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/messages', messageRoutes);

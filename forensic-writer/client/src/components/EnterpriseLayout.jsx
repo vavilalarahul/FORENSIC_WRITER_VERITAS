@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { 
-    Menu, X, Shield, User, LogOut, Settings, Calendar, HelpCircle
+    Menu, X, Shield, User, Settings, Calendar, HelpCircle
 } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 import ThemeSwitcher from './ThemeSwitcher';
@@ -17,9 +17,6 @@ const EnterpriseLayout = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { user, logout } = useAuth();
-    
-    // Debugging as requested in Step 8
-    console.log("AUTH USER:", user);
     
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -54,7 +51,14 @@ const EnterpriseLayout = ({ children }) => {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+            // The portal dropdown is outside profileMenuRef DOM tree,
+            // so only close if click is outside both the ref AND not inside the portal dropdown
+            const portalDropdown = document.querySelector('[data-profile-dropdown]');
+            if (
+                profileMenuRef.current && 
+                !profileMenuRef.current.contains(event.target) &&
+                (!portalDropdown || !portalDropdown.contains(event.target))
+            ) {
                 setIsProfileMenuOpen(false);
             }
         };
@@ -164,22 +168,20 @@ const EnterpriseLayout = ({ children }) => {
 
                                  {isProfileMenuOpen && (
                                     <Portal>
-                                        <div className="fixed right-6 top-16 lg:top-20 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl p-2 z-[99999] animate-in fade-in slide-in-from-top-2 pointer-events-auto">
+                                        <div data-profile-dropdown className="fixed right-6 top-16 lg:top-20 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl p-2 z-[99999] animate-in fade-in slide-in-from-top-2 pointer-events-auto">
                                             <div className="px-4 py-3 border-b border-gray-200 dark:border-white/5 mb-1">
                                                 <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Authenticated As</p>
                                                 <p className="text-sm font-bold text-black dark:text-white truncate">{user?.username}</p>
                                             </div>
                                             <button 
-                                                onClick={() => { setIsProfileMenuOpen(false); navigate('/profile'); }}
+                                                onClick={(e) => { 
+                                                    e.stopPropagation();
+                                                    setIsProfileMenuOpen(false); 
+                                                    setTimeout(() => navigate('/profile'), 50);
+                                                }}
                                                 className="w-full flex items-center gap-3 p-3 rounded-xl text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all text-sm font-medium"
                                             >
                                                 <Settings size={16} /> Account Settings
-                                            </button>
-                                            <button 
-                                                onClick={handleLogout}
-                                                className="w-full flex items-center gap-3 p-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all text-sm font-bold"
-                                            >
-                                                <LogOut size={16} /> Terminate Session
                                             </button>
                                         </div>
                                     </Portal>

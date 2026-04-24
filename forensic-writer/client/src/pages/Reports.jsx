@@ -32,7 +32,10 @@ const Reports = () => {
 
     const fetchReports = async () => {
         try {
-            const response = await axios.get(`${API_URL}/reports`);
+            const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
+            const response = await axios.get(`${API_URL}/reports`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             setReports(response.data.reports || response.data || []);
         } catch (err) {
             console.error('Failed to fetch reports', err);
@@ -51,7 +54,10 @@ const Reports = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`${API_URL}/reports/${id}`);
+            const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
+            await axios.delete(`${API_URL}/reports/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             setReports(reports.filter(r => r._id !== id));
             setOpenMenu(null);
         } catch (err) {

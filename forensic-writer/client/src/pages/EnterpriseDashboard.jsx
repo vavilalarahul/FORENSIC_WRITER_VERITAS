@@ -22,10 +22,8 @@ const EnterpriseDashboard = () => {
     });
     const [recentCases, setRecentCases] = useState([]);
     const [analysisQueue, setAnalysisQueue] = useState([]);
-    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
         const fetchDashboardData = async () => {
             const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
             const headers = { Authorization: `Bearer ${token}` };
@@ -67,14 +65,6 @@ const EnterpriseDashboard = () => {
 
         fetchDashboardData();
     }, []);
-
-    if (!mounted) {
-        return (
-            <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
-    }
 
     if (loading) {
         return (
