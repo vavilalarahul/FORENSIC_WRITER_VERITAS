@@ -50,7 +50,6 @@ const RoleBasedNavigation = () => {
                     { path: '/admin/users', icon: Users, label: 'Users' },
                     { path: '/admin/messages', icon: Mail, label: 'Messages' },
                     { path: '/admin/history', icon: History, label: 'History' },
-                    { path: '/admin/report-vault', icon: FileArchive, label: 'Report Vault' },
                     { path: '/admin/settings', icon: Settings, label: 'Settings' },
                     { path: '/profile', icon: User, label: 'My Profile' }
                 ]
@@ -71,8 +70,6 @@ const RoleBasedNavigation = () => {
                     { path: '/investigator/ai-analysis', icon: Brain, label: 'AI Investigation' },
                     { path: '/investigator/reports', icon: BarChart3, label: 'Reports' },
                     { path: '/investigator/messages', icon: Mail, label: 'Messages' },
-                    { path: '/investigator/report-vault', icon: FileArchive, label: 'Report Vault' },
-                    { path: '/investigator/report-generator', icon: FileEdit, label: 'Report Generator' },
                     { path: '/investigator/history', icon: History, label: 'History' },
                     { path: '/profile', icon: User, label: 'My Profile' }
                 ]
@@ -88,7 +85,6 @@ const RoleBasedNavigation = () => {
                 items: [
                     { path: '/legal/dashboard', icon: Shield, label: 'Legal Dashboard' },
                     { path: '/legal/cases', icon: Folder, label: 'Case Review' },
-                    { path: '/legal/report-vault', icon: FileArchive, label: 'Report Vault' },
                     { path: '/legal/reports', icon: FileSearch, label: 'Reports Review' },
                     { path: '/legal/messages', icon: Mail, label: 'Messages' },
                     { path: '/legal/history', icon: History, label: 'History' },

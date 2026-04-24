@@ -94,8 +94,8 @@ const EnterpriseLayout = ({ children }) => {
                     <span className="font-bold text-black dark:text-white tracking-tight">FORENSIC WRITER</span>
                 </div>
 
-                {/* Navigation Scroll Area */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                {/* Navigation */}
+                <div className="flex-1 p-4">
                     <RoleBasedNavigation user={user} />
                 </div>
 

@@ -2,7 +2,6 @@ const Report = require('../models/Report');
 const Case = require('../models/Case');
 const Evidence = require('../models/Evidence');
 const ForensicAnalysisEngine = require('../utils/forensicAnalysisEngine');
-const ForensicReportGenerator = require('../utils/forensicReportGenerator');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
