@@ -4,7 +4,7 @@ const path = require('path');
 const axios = require('axios');
 const { analyzeImage, isImage } = require('./imageAnalysisService');
 
-const HF_TOKEN = process.env.HF_API_KEY;
+const HF_TOKEN = process.env.HUGGINGFACE_API_KEY;
 
 /**
  * Generate forensic report narrative using LLaMA 3.1 via HuggingFace
