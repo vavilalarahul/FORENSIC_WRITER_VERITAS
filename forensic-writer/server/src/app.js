@@ -12,7 +12,6 @@ const userRoutes = require('./routes/userRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const caseAssignmentRoutes = require('./routes/caseAssignmentRoutes');
-const reportVaultRoutes = require('./routes/reportVaultRoutes');
 const { router: messageRoutes } = require('./routes/simpleMessageRoutes');
 const imageAnalysisRoutes = require('./routes/imageAnalysis');
 
@@ -42,7 +41,6 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/case-assignments', caseAssignmentRoutes);
-app.use('/api/report-vault', reportVaultRoutes);
 
 app.get('/', (req, res) => {
     res.send('Forensic Writer API is running...');

@@ -21,9 +21,7 @@ const Messages = React.lazy(() => import('./pages/Messages'));
 const History = React.lazy(() => import('./pages/History'));
 const Users = React.lazy(() => import('./pages/Users'));
 const Reports = React.lazy(() => import('./pages/Reports'));
-const ReportVault = React.lazy(() => import('./pages/ReportVault'));
 const AIInvestigator = React.lazy(() => import('./pages/AIInvestigator'));
-const ForensicReportGenerator = React.lazy(() => import('./pages/ForensicReportGenerator'));
 
 // Layout wrapper component
 const LayoutWrapper = ({ children }) => {
@@ -72,7 +70,6 @@ const RoutesConfig = ({ routeKey }) => {
                             <Route path="users" element={<LayoutWrapper><Users /></LayoutWrapper>} />
                             <Route path="messages" element={<LayoutWrapper><Messages /></LayoutWrapper>} />
                             <Route path="history" element={<LayoutWrapper><History /></LayoutWrapper>} />
-                            <Route path="report-vault" element={<LayoutWrapper><ReportVault /></LayoutWrapper>} />
                             <Route path="settings" element={<LayoutWrapper><Profile /></LayoutWrapper>} />
                         </Routes>
                     </ProtectedRoute>
