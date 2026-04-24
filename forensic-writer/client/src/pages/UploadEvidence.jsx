@@ -4,7 +4,7 @@ import axios from 'axios';
 import {
     ArrowLeft, CloudUpload, FileText, Image as ImageIcon, Database,
     Phone, MessageSquare, CheckCircle, Loader2, X, Upload, File,
-    Camera, Eye, AlertTriangle, Sparkles
+    AlertTriangle
 } from 'lucide-react';
 
 const API_URL = 'http://localhost:5000/api';
@@ -14,7 +14,6 @@ const UploadEvidence = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const fileInputRef = useRef(null);
-    const imageInputRef = useRef(null);
     const { forensicCase } = location.state || {};
 
     // Evidence files state
@@ -27,14 +26,6 @@ const UploadEvidence = () => {
     const [error, setError] = useState('');
     const [uploadProgress, setUploadProgress] = useState(0);
     const [dragActive, setDragActive] = useState(false);
-
-    // Image analysis state
-    const [imageFiles, setImageFiles] = useState([]);
-    const [imageDragActive, setImageDragActive] = useState(false);
-    const [analyzingImages, setAnalyzingImages] = useState(false);
-    const [imageResults, setImageResults] = useState([]);
-    const [imageUploadProgress, setImageUploadProgress] = useState(0);
-    const [imageUploaded, setImageUploaded] = useState(false);
 
     useEffect(() => {
         if (!forensicCase) {
@@ -104,59 +95,6 @@ const UploadEvidence = () => {
     };
 
     const removeFile = (index) => setCurrentFiles(prev => prev.filter((_, i) => i !== index));
-
-    // ── Image upload + analysis handlers ─────────────────────────────────────
-    const handleImageSelect = (e) => setImageFiles(Array.from(e.target.files));
-
-    const handleImageDrag = (e) => {
-        e.preventDefault(); e.stopPropagation();
-        setImageDragActive(e.type === 'dragenter' || e.type === 'dragover');
-    };
-
-    const handleImageDrop = (e) => {
-        e.preventDefault(); e.stopPropagation();
-        setImageDragActive(false);
-        const dropped = Array.from(e.dataTransfer.files).filter(f => isImageFile(f.name));
-        setImageFiles(dropped);
-    };
-
-    const handleImageUploadAndAnalyze = async () => {
-        const targetCaseId = forensicCase?._id || selectedCaseId;
-        if (!targetCaseId) { setError('No case selected for image upload.'); return; }
-        if (imageFiles.length === 0) { setError('Please select image files.'); return; }
-
-        setAnalyzingImages(true); setError(''); setImageResults([]);
-
-        const formData = new FormData();
-        imageFiles.forEach(f => formData.append('evidence', f));
-
-        try {
-            const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-
-            // Upload images as evidence
-            await axios.post(`${API_URL}/evidence/${targetCaseId}`, formData, {
-                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
-                onUploadProgress: (e) => setImageUploadProgress(Math.round((e.loaded * 100) / e.total))
-            });
-
-            // Trigger AI analysis on the uploaded images
-            const evidenceData = imageFiles.map(f => ({ fileName: f.name, fileType: f.type, fileSize: f.size }));
-            const analysisRes = await axios.post(`${API_URL}/ai/analyze/${targetCaseId}`, {
-                evidenceData,
-                caseName: forensicCase?.caseName || 'Case'
-            }, { headers: { Authorization: `Bearer ${token}` } });
-
-            const imgResults = analysisRes.data?.analysis?.imageResults || [];
-            setImageResults(imgResults);
-            setImageUploaded(true);
-        } catch (err) {
-            setError(err.response?.data?.message || 'Image upload/analysis failed');
-        } finally {
-            setAnalyzingImages(false);
-        }
-    };
-
-    const removeImageFile = (index) => setImageFiles(prev => prev.filter((_, i) => i !== index));
 
     const formatFileSize = (bytes) => {
         if (!bytes) return '0 B';
@@ -308,153 +246,6 @@ const UploadEvidence = () => {
                                 </li>
                             ))}
                         </ul>
-                    </div>
-                </div>
-            </div>
-
-            {/* ── Section 2: Image Analysis ─────────────────────────────────── */}
-            <div className="bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-8">
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                        <Camera size={20} className="text-purple-400" />
-                    </div>
-                    <div>
-                        <h2 className="text-lg font-bold text-black dark:text-white">Image Evidence Analysis</h2>
-                        <p className="text-sm text-gray-400">Upload images for AI-powered scene detection & object recognition via HuggingFace</p>
-                    </div>
-                    <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-full">
-                        <Sparkles size={14} className="text-purple-400" />
-                        <span className="text-xs text-purple-400 font-semibold">ViT + DETR Models</span>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                    {/* Image drop zone */}
-                    <div>
-                        <input
-                            type="file"
-                            ref={imageInputRef}
-                            onChange={handleImageSelect}
-                            multiple
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                        />
-                        <div
-                            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${imageDragActive ? 'border-purple-500 bg-purple-500/10' : 'border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:hover:border-purple-500'}`}
-                            onClick={() => imageInputRef.current?.click()}
-                            onDragEnter={handleImageDrag} onDragLeave={handleImageDrag}
-                            onDragOver={handleImageDrag} onDrop={handleImageDrop}
-                        >
-                            {imageUploaded ? (
-                                <div className="space-y-2">
-                                    <CheckCircle size={48} className="text-green-500 mx-auto" />
-                                    <p className="font-semibold text-black dark:text-white">Images Analyzed</p>
-                                    <p className="text-sm text-gray-400">See results on the right</p>
-                                </div>
-                            ) : analyzingImages ? (
-                                <div className="space-y-3">
-                                    <Loader2 size={48} className="text-purple-400 mx-auto animate-spin" />
-                                    <p className="font-semibold text-black dark:text-white">Analyzing with AI... {imageUploadProgress}%</p>
-                                    <p className="text-sm text-gray-400">Running ViT scene detection & DETR object detection</p>
-                                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                        <div className="bg-purple-500 h-2 rounded-full transition-all" style={{ width: `${imageUploadProgress}%` }} />
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    <Camera size={48} className="text-gray-400 mx-auto" />
-                                    <p className="font-semibold text-black dark:text-white">
-                                        {imageFiles.length > 0 ? `${imageFiles.length} image(s) selected` : 'Drop images here'}
-                                    </p>
-                                    <p className="text-sm text-gray-400">JPG, PNG, GIF, BMP, WEBP</p>
-                                </div>
-                            )}
-                        </div>
-
-                        {imageFiles.length > 0 && !analyzingImages && !imageUploaded && (
-                            <div className="mt-4 space-y-2">
-                                {imageFiles.map((file, i) => (
-                                    <div key={i} className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-700/50 rounded-lg">
-                                        <ImageIcon size={16} className="text-purple-400 flex-shrink-0" />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm text-black dark:text-white truncate">{file.name}</p>
-                                            <p className="text-xs text-gray-400">{formatFileSize(file.size)}</p>
-                                        </div>
-                                        <button onClick={() => removeImageFile(i)} className="p-1 text-gray-400 hover:text-red-400">
-                                            <X size={14} />
-                                        </button>
-                                    </div>
-                                ))}
-                                <button
-                                    onClick={handleImageUploadAndAnalyze}
-                                    className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-purple-600/20"
-                                >
-                                    <Sparkles size={18} /> Upload & Analyze Images
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Image analysis results */}
-                    <div>
-                        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <Eye size={14} /> Analysis Results
-                        </h3>
-                        {imageResults.length === 0 ? (
-                            <div className="h-full min-h-[200px] flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl">
-                                <Eye size={36} className="mb-2 opacity-30" />
-                                <p className="text-sm">Results will appear here after analysis</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
-                                {imageResults.map((result, i) => (
-                                    <div key={i} className="p-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl space-y-3">
-                                        <div className="flex items-center gap-2">
-                                            <ImageIcon size={16} className="text-purple-400" />
-                                            <span className="text-sm font-bold text-black dark:text-white truncate">{result.fileName}</span>
-                                            <span className="ml-auto text-xs text-purple-400 font-mono">{result.confidence?.toFixed(1)}%</span>
-                                        </div>
-
-                                        <p className="text-xs text-gray-500 leading-relaxed">{result.forensicSummary}</p>
-
-                                        {result.sceneLabels?.length > 0 && (
-                                            <div>
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Scene Labels</p>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {result.sceneLabels.slice(0, 4).map((s, j) => (
-                                                        <span key={j} className="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[10px] font-medium">
-                                                            {s.label} ({(s.score * 100).toFixed(0)}%)
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {result.detectedObjects?.length > 0 && (
-                                            <div>
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Detected Objects</p>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {result.detectedObjects.slice(0, 6).map((o, j) => (
-                                                        <span key={j} className="px-2 py-0.5 bg-green-500/10 text-green-400 border border-green-500/20 rounded text-[10px] font-medium">
-                                                            {o.label} ({(o.score * 100).toFixed(0)}%)
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {result.riskIndicators?.length > 0 && (
-                                            <div className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/20 rounded-lg">
-                                                <AlertTriangle size={14} className="text-red-400 flex-shrink-0" />
-                                                <p className="text-xs text-red-400 font-semibold">
-                                                    Risk indicators: {result.riskIndicators.join(', ')}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

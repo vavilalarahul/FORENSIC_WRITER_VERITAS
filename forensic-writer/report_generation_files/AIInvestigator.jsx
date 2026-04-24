@@ -351,47 +351,6 @@ const AIInvestigator = () => {
         }
     };
 
-    const stripHTMLTags = (html) => {
-        // Remove style tags and their content
-        let text = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
-        
-        // Remove script tags and their content
-        text = text.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
-        
-        // Remove HTML head section
-        text = text.replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '');
-        
-        // Remove HTML comments
-        text = text.replace(/<!--[\s\S]*?-->/g, '');
-        
-        // Replace block-level elements with newlines
-        text = text.replace(/<\/(div|p|h[1-6]|li|tr|td|th|ul|ol|section|article|header|footer)>/gi, '\n\n');
-        
-        // Replace inline elements with space
-        text = text.replace(/<\/(span|strong|em|b|i|a|small|sub|sup)>/gi, ' ');
-        
-        // Remove all remaining HTML tags
-        text = text.replace(/<[^>]*>/g, '');
-        
-        // Replace HTML entities
-        text = text.replace(/&nbsp;/g, ' ');
-        text = text.replace(/&amp;/g, '&');
-        text = text.replace(/&lt;/g, '<');
-        text = text.replace(/&gt;/g, '>');
-        text = text.replace(/&quot;/g, '"');
-        text = text.replace(/&#39;/g, "'");
-        
-        // Remove multiple consecutive newlines and whitespace
-        text = text.replace(/\n\s*\n\s*\n/g, '\n\n');
-        text = text.replace(/[ \t]+/g, ' ');
-        
-        // Clean up extra whitespace
-        return text.split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0)
-            .join('\n');
-    };
-
     const handleExportPDF = () => {
         if (!reportReady || !analysisResults) {
             addLog('No analysis report available to export', 'error');
@@ -456,142 +415,30 @@ const AIInvestigator = () => {
             doc.text(`Investigator: ${user?.name || 'AI Investigator'}`, marginLeft, y);
             y += 20;
             
-            // If LLM report exists, use it directly without old template
-            if (analysisResults.llmReport) {
-                // Clean white background
-                doc.setFillColor(255, 255, 255);
-                doc.rect(0, 0, 210, 297, 'F');
-                
-                // HEADER SECTION
-                y = 30;
-                doc.setFontSize(18);
-                doc.setTextColor(0, 0, 0);
-                doc.setFont('helvetica', 'bold');
-                doc.text('FORENSIC INVESTIGATION REPORT', 105, y, { align: 'center' });
-                y += 20;
-                
-                // Case info block
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(0, 0, 0);
-                
-                const caseInfo = [
-                    { label: 'Case Name:', value: selectedCase?.caseName || 'Unknown' },
-                    { label: 'Case ID:', value: selectedCase?.caseId || 'N/A' },
-                    { label: 'Date:', value: new Date().toLocaleDateString() },
-                    { label: 'Investigator:', value: user?.name || 'AI Investigator' },
-                    { label: 'Evidence Type:', value: 'File Analysis' },
-                    { label: 'Report Status:', value: 'COURT READY' }
-                ];
-                
-                caseInfo.forEach(info => {
-                    checkPageBreak(8);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(info.label, 25, y);
-                    doc.setFont('helvetica', 'normal');
-                    doc.text(info.value, 60, y);
-                    y += 8;
-                });
-                
-                y += 15;
-                
-                // Add separator line
-                doc.setDrawColor(0, 0, 0);
-                doc.setLineWidth(1);
-                doc.line(25, y, 185, y);
-                y += 20;
-                
-                // Add report content
-                const rawLLMReport = analysisResults.llmReport;
-                const analysisText = stripHTMLTags(rawLLMReport);
-                
-                // Process text to detect section headers and format accordingly
-                const lines = analysisText.split('\n');
-                lines.forEach(line => {
-                    if (line.trim()) {
-                        checkPageBreak(15);
-                        // Check if line looks like a section header (all caps)
-                        if (line === line.toUpperCase() && line.length > 3 && line.length < 50) {
-                            // Section heading: bold, uppercase, with line underneath
-                            doc.setFontSize(12);
-                            doc.setFont('helvetica', 'bold');
-                            doc.setTextColor(0, 0, 0);
-                            doc.text(line, 25, y);
-                            y += 5;
-                            doc.setDrawColor(0, 0, 0);
-                            doc.setLineWidth(1);
-                            doc.line(25, y, 185, y);
-                            y += 12;
-                        } else if (line.endsWith(':')) {
-                            doc.setFontSize(10);
-                            doc.setFont('helvetica', 'bold');
-                            doc.setTextColor(0, 0, 0);
-                            doc.text(line, 25, y);
-                            y += 8;
-                        } else if (line.startsWith('•') || line.startsWith('-')) {
-                            // Bullet point
-                            doc.setFontSize(10);
-                            doc.setFont('helvetica', 'normal');
-                            doc.setTextColor(0, 0, 0);
-                            doc.text(line, 30, y);
-                            y += 7;
-                        } else {
-                            doc.setFontSize(10);
-                            doc.setFont('helvetica', 'normal');
-                            doc.setTextColor(0, 0, 0);
-                            const wrappedLines = doc.splitTextToSize(line, 160);
-                            wrappedLines.forEach(wrappedLine => {
-                                checkPageBreak(7);
-                                doc.text(wrappedLine, 25, y);
-                                y += 6;
-                            });
-                        }
-                    }
-                });
-                
-                // NOTE section at bottom
-                y += 20;
-                checkPageBreak(15);
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'italic');
-                doc.setTextColor(80, 80, 80);
-                doc.text('Note: This report is based solely on the provided evidence data and does not include any external information or assumptions.', 25, y);
-                y += 10;
-                
-                // FOOTER on every page
-                const pageCount = doc.internal.getNumberOfPages();
-                for (let i = 1; i <= pageCount; i++) {
-                    doc.setPage(i);
-                    doc.setFontSize(8);
-                    doc.setFont('helvetica', 'normal');
-                    doc.setTextColor(100, 100, 100);
-                    doc.text('ForensiQ — Automated Digital Forensics Reporting Tool', 105, 285, { align: 'center' });
-                    doc.text(`Case ID: ${selectedCase?.caseId || 'N/A'} | Generated: ${new Date().toLocaleDateString()}`, 105, 290, { align: 'center' });
-                }
-                y += 10;
-            } else {
-                // Use old template for fallback
-                // Objective Section
-                y = addSectionTitle('OBJECTIVE');
-                const objectiveText = analysisResults.objective || 
-                    "The main aim of this system is to analyze large volumes of raw data such as call logs, records, files, and documents, which cannot be efficiently processed by humans within a limited time. The AI system performs this analysis and generates a structured report highlighting patterns and anomalies.";
-                y = addText(objectiveText, 10, [50, 50, 50]);
-                y += 10;
-                
-                // Evidence Summary Section
-                y = addSectionTitle('EVIDENCE SUMMARY');
-                const evidenceSummary = analysisResults.evidence_summary || 
-                    selectedEvidence.map(e => `- ${e.fileName} (${e.fileType || 'Unknown'})`).join('\n');
-                y = addText(evidenceSummary, 10, [50, 50, 50]);
-                y += 10;
-                
-                // Analysis Section
-                checkPageBreak(20);
-                doc.setFontSize(11);
-                const analysisText = 'No AI-generated analysis available. Please check server logs for LLM availability.';
-                y = addText(analysisText, 10, [50, 50, 50]);
-                y += 10;
-            }
+            // Objective Section
+            y = addSectionTitle('OBJECTIVE');
+            const objectiveText = analysisResults.objective || 
+                "The main aim of this system is to analyze large volumes of raw data such as call logs, records, files, and documents, which cannot be efficiently processed by humans within a limited time. The AI system performs this analysis and generates a structured report highlighting patterns and anomalies.";
+            y = addText(objectiveText, 10, [50, 50, 50]);
+            y += 10;
+            
+            // Evidence Summary Section
+            y = addSectionTitle('EVIDENCE SUMMARY');
+            const evidenceSummary = analysisResults.evidence_summary || 
+                selectedEvidence.map(e => `- ${e.fileName} (${e.fileType || 'Unknown'})`).join('\n');
+            y = addText(evidenceSummary, 10, [50, 50, 50]);
+            y += 10;
+            
+            // Analysis Section - Use LLM report if available
+            // The LLM now generates the full report with all sections
+            checkPageBreak(20);
+            doc.setFontSize(11);
+            
+            // Use LLM-generated report if available, otherwise use fallback
+            const analysisText = analysisResults.llmReport || 
+                'No AI-generated analysis available. Please check server logs for LLM availability.';
+            y = addText(analysisText, 10, [50, 50, 50]);
+            y += 10;
             
             // Add new page for timeline if available
             if (analysisResults.timeline && analysisResults.timeline.length > 0) {

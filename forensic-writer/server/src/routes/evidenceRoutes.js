@@ -65,6 +65,7 @@ router.post('/:caseId', protect, checkRole(['legal_advisor', 'forensic_investiga
                 fileType: file.mimetype,
                 fileSize: file.size || 0,
                 fileUrl: `/uploads/${file.filename}`,
+                filePath: file.path, // Add actual file path for content extraction
                 caseId: caseId,
                 uploadedAt: new Date().toISOString()
             };

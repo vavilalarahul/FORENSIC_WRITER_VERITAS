@@ -318,13 +318,18 @@ function buildEvidenceJSON(results, caseName) {
   // Add file evidence if present
   if (hasFile) {
     const file = results.files.find(f => !f.imageAnalysis);
+    const content = file.content || '';
+    const ipMatches = content.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g) || [];
+    const errorMatches = content.match(/error|Error|ERROR|failed|Failed|FAILED/g) || [];
+    const timestampMatches = content.match(/\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4}/g) || [];
+    
     evidenceJSON.file_evidence = {
       filename: file.fileName,
       summary_for_report: `File analyzed with ${results.totalAnomalies.length} anomalies detected`,
-      total_lines: 1,
-      ip_addresses_found: [],
-      error_events: 0,
-      timestamps_found: []
+      total_lines: content.split('\n').length,
+      ip_addresses_found: ipMatches,
+      error_events: errorMatches.length,
+      timestamps_found: timestampMatches
     };
   }
 
@@ -582,31 +587,31 @@ async function generateLLMReport(results, caseName) {
   console.log('[LLM] Prompt length:', prompt.length);
 
   try {
-    console.log('[LLM] Calling HuggingFace Router API...');
+    console.log('[LLM] Calling HuggingFace Inference API...');
     const res = await axios.post(
-      'https://router.huggingface.co/v1/chat/completions',
+      'https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct',
       {
-        model: 'meta-llama/Llama-3.1-8B-Instruct',
-        messages: [
-          { role: 'system', content: 'You are a professional digital forensics report writer for a court of law. Generate clean HTML reports using only the evidence data provided. Use formal, neutral, court-appropriate language. Output ONLY valid HTML with no markdown.' },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 3000,
-        temperature: 0.2
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 3000,
+          temperature: 0.2,
+          top_p: 0.9,
+          repetition_penalty: 1.1,
+          return_full_text: false,
+        },
       },
       {
         headers: {
           Authorization: `Bearer ${HF_TOKEN}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        timeout: 90000
+        timeout: 90000,
       }
     );
     console.log('[LLM] API response received');
     
-    const rawHTML = res.data?.choices?.[0]?.message?.content || '<p>Report generation failed.</p>';
+    const rawHTML = res.data?.[0]?.generated_text || res.data?.generated_text || '<p>Report generation failed.</p>';
     console.log('[LLM] Generated HTML length:', rawHTML.length);
-    console.log('[LLM] Generated HTML preview:', rawHTML.substring(0, 500));
     
     // Wrap with full CSS
     const fullReport = wrapReportWithCSS(rawHTML, evidenceJSON.caseId);

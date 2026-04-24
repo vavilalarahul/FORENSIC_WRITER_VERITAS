@@ -41,45 +41,31 @@ class PDFReportService {
 
                 let y = 50;
 
-                // If LLM report exists, use it directly without old template
-                if (analysisResult.llmReport) {
-                    // Header
-                    this.addHeader(doc, y);
-                    y += 60;
-                    
-                    // AI GENERATED REPORT section
-                    this.addSection(doc, y, 'AI GENERATED REPORT');
-                    y += 20;
-                    y = this.addAnalysis(doc, y, analysisResult);
-                    y += 30;
-                } else {
-                    // Use old template for fallback
-                    // Header
-                    this.addHeader(doc, y);
-                    y += 60;
+                // Header
+                this.addHeader(doc, y);
+                y += 60;
 
-                    // Case Details
-                    y = this.addCaseDetails(doc, y, caseInfo, analysisResult);
-                    y += 30;
+                // Case Details
+                y = this.addCaseDetails(doc, y, caseInfo, analysisResult);
+                y += 30;
 
-                    // OBJECTIVE section
-                    this.addSection(doc, y, 'OBJECTIVE');
-                    y += 20;
-                    y = this.addObjective(doc, y);
-                    y += 30;
+                // OBJECTIVE section
+                this.addSection(doc, y, 'OBJECTIVE');
+                y += 20;
+                y = this.addObjective(doc, y);
+                y += 30;
 
-                    // EVIDENCE SUMMARY section
-                    this.addSection(doc, y, 'EVIDENCE SUMMARY');
-                    y += 20;
-                    y = this.addEvidenceSummary(doc, y, analysisResult);
-                    y += 30;
+                // EVIDENCE SUMMARY section
+                this.addSection(doc, y, 'EVIDENCE SUMMARY');
+                y += 20;
+                y = this.addEvidenceSummary(doc, y, analysisResult);
+                y += 30;
 
-                    // ANALYSIS section
-                    this.addSection(doc, y, 'ANALYSIS');
-                    y += 20;
-                    y = this.addAnalysis(doc, y, analysisResult);
-                    y += 30;
-                }
+                // ANALYSIS section
+                this.addSection(doc, y, 'ANALYSIS');
+                y += 20;
+                y = this.addAnalysis(doc, y, analysisResult);
+                y += 30;
 
                 doc.end();
 
@@ -168,13 +154,8 @@ class PDFReportService {
         
         // Use LLM report if available
         if (analysisResult.llmReport) {
-            console.log('[PDF] LLM report length:', analysisResult.llmReport.length);
-            console.log('[PDF] LLM report preview:', analysisResult.llmReport.substring(0, 200));
             // Strip HTML tags from LLM report for PDF rendering
             analysisText = this.stripHTMLTags(analysisResult.llmReport);
-            console.log('[PDF] Stripped text length:', analysisText.length);
-            console.log('[PDF] Stripped text preview:', analysisText.substring(0, 500));
-            console.log('[PDF] Full stripped text:', analysisText);
         } else if (analysisResult.files.length > 0) {
             analysisText += `Evidence Files Analyzed:\n\n`;
             analysisResult.files.forEach((file, index) => {
@@ -226,17 +207,11 @@ class PDFReportService {
         // Remove script tags and their content
         text = text.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
         
-        // Remove HTML head section
-        text = text.replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '');
-        
         // Remove HTML comments
         text = text.replace(/<!--[\s\S]*?-->/g, '');
         
         // Replace block-level elements with newlines
         text = text.replace(/<\/(div|p|h[1-6]|li|tr|td|th|ul|ol|section|article|header|footer)>/gi, '\n');
-        
-        // Replace inline elements with space
-        text = text.replace(/<\/(span|strong|em|b|i|a|small|sub|sup)>/gi, ' ');
         
         // Remove all remaining HTML tags
         text = text.replace(/<[^>]*>/g, '');
@@ -249,6 +224,10 @@ class PDFReportService {
         text = text.replace(/&quot;/g, '"');
         text = text.replace(/&#39;/g, "'");
         
+        // Remove CSS properties and values (patterns like "color: #1565C0;")
+        text = text.replace(/\{[^}]*\}/g, '');
+        text = text.replace(/[a-z-]+:\s*[^;]+;?/gi, '');
+        
         // Remove multiple consecutive newlines and whitespace
         text = text.replace(/\n\s*\n\s*\n/g, '\n\n');
         text = text.replace(/[ \t]+/g, ' ');
@@ -256,7 +235,7 @@ class PDFReportService {
         // Clean up extra whitespace
         return text.split('\n')
             .map(line => line.trim())
-            .filter(line => line.length > 0)
+            .filter(line => line.length > 0 && !line.match(/^[a-z-]+:$/i))
             .join('\n');
     }
 }
