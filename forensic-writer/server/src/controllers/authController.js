@@ -38,13 +38,13 @@ const register = async (req, res) => {
         const otp = generateOTP();
         const otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-        // Create user (not verified yet)
+        // Create user (temporarily auto-verified for testing)
         const user = await User.create({
             username,
             email,
             password: hashedPassword,
             role: role || 'investigator',
-            isVerified: false,
+            isVerified: true, // Temporarily set to true for testing
             otp,
             otpExpiry
         });

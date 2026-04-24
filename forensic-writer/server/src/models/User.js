@@ -8,7 +8,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["admin", "investigator", "legal_advisor"],
     required: true
-  }
+  },
+  isVerified: { type: Boolean, default: false },
+  otp: { type: String },
+  otpExpiry: { type: Date },
+  avatar: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);
