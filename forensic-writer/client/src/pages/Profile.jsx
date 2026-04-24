@@ -5,8 +5,7 @@ import axios from 'axios';
 import ProfileHeader from '../components/ProfileHeader';
 import ProfileDetails from '../components/ProfileDetails';
 import ProfileStats from '../components/ProfileStats';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 // Cute SVG Avatar presets
 const PRESET_AVATARS = [

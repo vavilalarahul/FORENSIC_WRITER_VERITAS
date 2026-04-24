@@ -3,8 +3,7 @@ import { Shield, Users, Folder, Activity, CheckCircle, Clock, Bell, Settings, X,
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 const AdminDashboard = () => {
     const { user } = useAuth();

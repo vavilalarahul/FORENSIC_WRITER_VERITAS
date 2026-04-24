@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 // Notification context state
 const initialState = {

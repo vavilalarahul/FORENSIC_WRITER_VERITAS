@@ -7,8 +7,7 @@ import {
 } from 'lucide-react';
 import CaseRemarks from '../components/CaseRemarks';
 import { useAuth } from '../context/AuthContext';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 const CaseDetails = () => {
     const { id } = useParams();

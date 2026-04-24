@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, User, Bot, MessageCircle, Clock, ShieldAlert } from 'lucide-react';
 import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 const CaseRemarks = ({ caseId }) => {
     const [user] = useState({ username: 'User', email: 'user@example.com', role: 'investigator' });

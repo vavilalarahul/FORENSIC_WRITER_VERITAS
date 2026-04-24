@@ -5,8 +5,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 const MiniAIAssistant = () => {
     const [isOpen, setIsOpen] = useState(false);

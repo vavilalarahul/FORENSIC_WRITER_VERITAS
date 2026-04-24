@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { FileText, Download, Activity, Clock, ChevronRight, Eye, BarChart3, FileCheck, AlertCircle, Calendar } from 'lucide-react';
 import { useMessages } from '../context/MessageContext';
 import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 const ReporterDashboard = () => {
     const { createNotification } = useMessages();

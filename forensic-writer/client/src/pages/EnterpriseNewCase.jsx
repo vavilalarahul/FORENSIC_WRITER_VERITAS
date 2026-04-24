@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Save, Shield, FileText, User, Calendar, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 const EnterpriseNewCase = () => {
     const navigate = useNavigate();

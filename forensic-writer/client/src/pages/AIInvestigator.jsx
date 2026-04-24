@@ -9,8 +9,7 @@ import {
     Search, AlertCircle, CheckCircle, Loader2, Play, FileText, X, Clock,
     Network, Globe, HardDrive, Hash, Eye, Upload, FolderOpen
 } from 'lucide-react';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 const AIInvestigator = () => {
     const location = useLocation();

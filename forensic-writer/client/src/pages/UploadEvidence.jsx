@@ -6,8 +6,7 @@ import {
     Phone, MessageSquare, CheckCircle, Loader2, X, Upload, File,
     AlertTriangle
 } from 'lucide-react';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
 
 const UploadEvidence = () => {

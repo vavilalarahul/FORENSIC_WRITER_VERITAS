@@ -3,8 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Bell, Check, X, FileText, MessageSquare, AlertCircle, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 const NotificationPanel = () => {
     const navigate = useNavigate();
