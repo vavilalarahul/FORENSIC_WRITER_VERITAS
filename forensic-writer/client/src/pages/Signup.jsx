@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Lock, Mail, User, Shield, ChevronRight, Eye, EyeOff, Activity } from 'lucide-react';
 import { NetworkBackground } from '../components/NetworkBackground';
+import API from '../config/api';
 import { API_URL } from '../config/api';
 
 const Signup = () => {
@@ -28,14 +29,10 @@ const Signup = () => {
     setIsError(false);
 
     try {
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
+      const response = await API.post('/auth/register', formData);
+      const data = response.data;
 
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         setIsError(false);
         setMessage('OTP sent to your email! Please verify below.');
         setStep('otp');
@@ -58,14 +55,10 @@ const Signup = () => {
     setIsError(false);
 
     try {
-      const response = await fetch(`${API_URL}/auth/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, otp }),
-      });
-      const data = await response.json();
+      const response = await API.post('/auth/verify-otp', { email: formData.email, otp });
+      const data = response.data;
 
-      if (response.ok) {
+      if (response.status === 200) {
         setIsError(false);
         setMessage('Account created successfully! Redirecting to login...');
         setTimeout(() => navigate('/login'), 2000);

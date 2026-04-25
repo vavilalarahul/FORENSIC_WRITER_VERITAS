@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import axios from 'axios';
+import API from '../config/api';
 import { useAuth } from './AuthContext';
 import { API_URL } from '../config/api';
 
@@ -136,9 +136,7 @@ export const MessageProvider = ({ children }) => {
             dispatch({ type: NOTIFICATION_ACTIONS.SET_LOADING, payload: true });
             
             const token = getAuthToken();
-            const response = await axios.get(`${API_URL}/notifications?page=${page}&limit=${limit}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await API.get(`/notifications?page=${page}&limit=${limit}`);
 
             dispatch({
                 type: NOTIFICATION_ACTIONS.SET_NOTIFICATIONS,
@@ -162,9 +160,7 @@ export const MessageProvider = ({ children }) => {
     const fetchUnreadCount = async () => {
         try {
             const token = getAuthToken();
-            const response = await axios.get(`${API_URL}/notifications/unread-count`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await API.get('/notifications/unread-count');
 
             dispatch({
                 type: NOTIFICATION_ACTIONS.SET_UNREAD_COUNT,
@@ -181,9 +177,7 @@ export const MessageProvider = ({ children }) => {
     const createNotification = async (notificationData) => {
         try {
             const token = getAuthToken();
-            const response = await axios.post(`${API_URL}/notifications`, notificationData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await API.post('/notifications', notificationData);
 
             // Add to local state if it's for current user
             if (response.data.userId === getCurrentUserId()) {
@@ -204,9 +198,7 @@ export const MessageProvider = ({ children }) => {
     const broadcastNotification = async (notificationData) => {
         try {
             const token = getAuthToken();
-            const response = await axios.post(`${API_URL}/notifications/broadcast`, notificationData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await API.post('/notifications/broadcast', notificationData);
 
             return response.data;
         } catch (error) {
@@ -219,9 +211,7 @@ export const MessageProvider = ({ children }) => {
     const markAsRead = async (notificationId) => {
         try {
             const token = getAuthToken();
-            await axios.patch(`${API_URL}/notifications/${notificationId}/read`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.patch(`/notifications/${notificationId}/read`);
 
             dispatch({
                 type: NOTIFICATION_ACTIONS.MARK_AS_READ,
@@ -237,9 +227,7 @@ export const MessageProvider = ({ children }) => {
     const markAllAsRead = async () => {
         try {
             const token = getAuthToken();
-            await axios.patch(`${API_URL}/notifications/read-all`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.patch('/notifications/read-all');
 
             dispatch({ type: NOTIFICATION_ACTIONS.MARK_ALL_AS_READ });
         } catch (error) {
@@ -252,9 +240,7 @@ export const MessageProvider = ({ children }) => {
     const deleteNotification = async (notificationId) => {
         try {
             const token = getAuthToken();
-            await axios.delete(`${API_URL}/notifications/${notificationId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.delete(`/notifications/${notificationId}`);
 
             dispatch({
                 type: NOTIFICATION_ACTIONS.DELETE_NOTIFICATION,

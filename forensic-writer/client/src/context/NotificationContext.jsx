@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import axios from 'axios';
+import API from '../config/api';
 import { useAuth } from './AuthContext';
 import { API_URL } from '../config/api';
 
@@ -85,7 +85,7 @@ export const NotificationProvider = ({ children }) => {
     if (!token) return;
     setIsLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/notifications`, { headers: getHeaders() });
+      const response = await API.get('/notifications');
       setNotifications(response.data.notifications || []);
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -98,7 +98,7 @@ export const NotificationProvider = ({ children }) => {
     const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
     if (!token) return;
     try {
-      const response = await axios.get(`${API_URL}/notifications/unread-count`, { headers: getHeaders() });
+      const response = await API.get('/notifications/unread-count');
       setUnreadCount(response.data.unreadCount || 0);
     } catch (error) {
       console.error('Error fetching unread count:', error);
@@ -114,13 +114,13 @@ export const NotificationProvider = ({ children }) => {
 
   const markAsRead = useCallback(async (notificationId) => {
     try {
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(notif => notif._id === notificationId ? { ...notif, isRead: true } : notif)
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
-      
-      await axios.patch(`${API_URL}/notifications/${notificationId}/read`, {}, { headers: getHeaders() });
-      
+
+      await API.patch(`/notifications/${notificationId}/read`);
+
       if (socket) {
         socket.emit('mark_notification_read', notificationId);
       }
@@ -133,7 +133,7 @@ export const NotificationProvider = ({ children }) => {
     try {
       setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
       setUnreadCount(0);
-      await axios.patch(`${API_URL}/notifications/read-all`, {}, { headers: getHeaders() });
+      await API.patch('/notifications/read-all');
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }
@@ -142,7 +142,7 @@ export const NotificationProvider = ({ children }) => {
   const deleteNotification = useCallback(async (notificationId) => {
     try {
       setNotifications(prev => prev.filter(notif => notif._id !== notificationId));
-      await axios.delete(`${API_URL}/notifications/${notificationId}`, { headers: getHeaders() });
+      await API.delete(`/notifications/${notificationId}`);
       fetchUnreadCount();
     } catch (error) {
       console.error('Error deleting notification:', error);

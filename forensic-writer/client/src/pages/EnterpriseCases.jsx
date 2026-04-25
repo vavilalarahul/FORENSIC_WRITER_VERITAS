@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-    Briefcase, Search, Filter, PlusCircle, Eye, Trash2, 
+import {
+    Briefcase, Search, Filter, PlusCircle, Eye, Trash2,
     Calendar, User, FileText, MoreVertical, ChevronDown, Download,
     AlertCircle, CheckCircle, Clock, XCircle, Activity
 } from 'lucide-react';
-import axios from 'axios';
+import API from '../config/api';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config/api';
 
@@ -21,9 +21,7 @@ const EnterpriseCases = () => {
     useEffect(() => {
         const fetchCases = async () => {
             try {
-                const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-                const headers = token ? { Authorization: `Bearer ${token}` } : {};
-                const response = await axios.get(`${API_URL}/cases`, { headers });
+                const response = await API.get('/cases');
                 
                 const casesData = response.data.cases || response.data || [];
                 setCases(Array.isArray(casesData) ? casesData : []);
@@ -124,10 +122,7 @@ Date: ${new Date().toLocaleDateString()}
         }
 
         try {
-            const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-            await axios.delete(`${API_URL}/cases/${caseId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.delete(`/cases/${caseId}`);
             setCases(cases.filter(c => c._id !== caseId));
         } catch (error) {
             console.error('Delete case error:', error);

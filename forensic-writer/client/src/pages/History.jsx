@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Search, Filter, Calendar, FileText, ChevronRight } from 'lucide-react';
-import axios from 'axios';
+import API from '../config/api';
 import { API_URL } from '../config/api';
 
 const History = () => {
@@ -12,7 +12,7 @@ const History = () => {
         const fetchHistory = async () => {
             try {
                 // Mocking history fetch for now, can be connected to real logs later
-                const response = await axios.get(`${API_URL}/cases`);
+                const response = await API.get('/cases');
                 
                 const cases = response.data.cases || response.data;
                 const mockLogs = cases.map((c, i) => ({

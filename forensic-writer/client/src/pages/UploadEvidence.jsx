@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import API from '../config/api';
 import {
     ArrowLeft, CloudUpload, FileText, Image as ImageIcon, Database,
     Phone, MessageSquare, CheckCircle, Loader2, X, Upload, File,
@@ -31,9 +31,7 @@ const UploadEvidence = () => {
             const fetchCases = async () => {
                 try {
                     setLoadingCases(true);
-                    const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-                    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-                    const response = await axios.get(`${API_URL}/cases`, { headers });
+                    const response = await API.get('/cases');
                     setCases(response.data.cases || response.data || []);
                 } catch (err) {
                     setError('Failed to load available cases.');
@@ -79,9 +77,8 @@ const UploadEvidence = () => {
         currentFiles.forEach(f => formData.append('evidence', f));
 
         try {
-            const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-            await axios.post(`${API_URL}/evidence/${targetCaseId}`, formData, {
-                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+            await API.post(`/evidence/${targetCaseId}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
                 onUploadProgress: (e) => setUploadProgress(Math.round((e.loaded * 100) / e.total))
             });
             setIsUploaded(true);

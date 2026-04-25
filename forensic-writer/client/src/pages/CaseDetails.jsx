@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import axios from 'axios';
-import { 
-    ArrowLeft, Calendar, User, Shield, Activity, FileText, 
+import API from '../config/api';
+import {
+    ArrowLeft, Calendar, User, Shield, Activity, FileText,
     Upload, Play, ExternalLink, HardDrive, Clock, Search
 } from 'lucide-react';
 import CaseRemarks from '../components/CaseRemarks';
@@ -28,7 +28,7 @@ const CaseDetails = () => {
         const fetchCaseDetails = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`${API_URL}/cases/${id}`);
+                const response = await API.get(`/cases/${id}`);
                 setCaseData(response.data.case || response.data);
             } catch (err) {
                 console.error('Failed to fetch case details', err);

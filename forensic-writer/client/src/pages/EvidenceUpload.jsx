@@ -5,7 +5,7 @@
 // ============================================================
 
 import { useState } from "react";
-import axios from "axios";
+import API from "../config/api";
 import { API_URL } from '../config/api';
 
 const API_BASE = API_URL;
@@ -49,7 +49,7 @@ export default function EvidenceUpload({ caseId, investigatorName }) {
     if (dataFile)  formData.append("dataFile", dataFile);
 
     try {
-      const res = await axios.post(`${API_BASE}/analyze`, formData, {
+      const res = await API.post('/analyze', formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setResult(res.data);

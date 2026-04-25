@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Mail, Search, Info, Shield, Scale, Terminal, Send, Plus, Users, X, MessageSquare, CheckCircle2, Mic, MicOff, AlertCircle } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import API from '../config/api';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../context/AuthContext';
@@ -42,7 +42,7 @@ const Messages = () => {
     const fetchUsers = useCallback(async () => {
         if (!token) return;
         try {
-            const res = await axios.get(`${API_URL}/users`, { headers });
+            const res = await API.get('/users');
             const all = res.data || [];
             // filter out current user just in case
             const filtered = all.filter(u => {
@@ -105,7 +105,7 @@ const Messages = () => {
         setMessages([]);
         try {
             const targetId = targetUser._id || targetUser.id;
-            const res = await axios.get(`${API_URL}/messages/${targetId}`, { headers });
+            const res = await API.get(`/messages/${targetId}`);
             setMessages(res.data.messages || []);
         } catch (err) {
             console.error('Fetch messages error:', err);
@@ -121,7 +121,7 @@ const Messages = () => {
         const text = input.trim();
         try {
             const targetId = activeUser._id || activeUser.id;
-            const res = await axios.post(`${API_URL}/messages/send`, { userId: targetId, message: text }, { headers });
+            const res = await API.post('/messages/send', { userId: targetId, message: text });
             if (res.data.message) {
                 setMessages(prev => [...prev, res.data.message]);
                 setInput('');

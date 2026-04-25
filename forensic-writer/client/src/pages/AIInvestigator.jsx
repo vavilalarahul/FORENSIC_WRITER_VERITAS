@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import API from '../config/api';
 import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { 
-    ArrowLeft, Cpu, Activity, Shield, Zap, Terminal, BarChart, Download, 
+import {
+    ArrowLeft, Cpu, Activity, Shield, Zap, Terminal, BarChart, Download,
     Search, AlertCircle, CheckCircle, Loader2, Play, FileText, X, Clock,
     Network, Globe, HardDrive, Hash, Eye, Upload, FolderOpen
 } from 'lucide-react';
@@ -96,14 +96,11 @@ const AIInvestigator = () => {
     }, [preserveAnalysis, selectedCase]);
 
     const { user } = useAuth();
-    const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-    const headers = { Authorization: `Bearer ${token}` };
 
     useEffect(() => {
         const fetchCases = async () => {
-            if (!token) return;
             try {
-                const response = await axios.get(`${API_URL}/cases`, { headers });
+                const response = await API.get('/cases');
                 const caseList = response.data.cases || response.data;
                 setCases(caseList);
                 if (!selectedCase && caseList && caseList.length > 0) {
@@ -116,17 +113,17 @@ const AIInvestigator = () => {
         };
 
         fetchCases();
-    }, [token]);
+    }, []);
 
     useEffect(() => {
-        if (selectedCase && token) {
+        if (selectedCase) {
             // Fetch evidence for selected case
             const fetchEvidence = async () => {
                 try {
                     const caseId = selectedCase._id;
                     console.log("[EVIDENCE LOAD] Fetching for case ID:", caseId);
                     
-                    const response = await axios.get(`${API_URL}/evidence/case/${caseId}`, { headers });
+                    const response = await API.get(`/evidence/case/${caseId}`);
                     console.log("[EVIDENCE LOAD] Response:", response.data);
                     
                     const evidence = response.data || [];
@@ -193,9 +190,8 @@ const AIInvestigator = () => {
             const caseId = selectedCase._id;
             console.log('[UPLOAD] Uploading files for case ID:', caseId);
             
-            const response = await axios.post(`${API_URL}/evidence/${caseId}`, formData, {
+            const response = await API.post(`/evidence/${caseId}`, formData, {
                 headers: {
-                    ...headers,
                     'Content-Type': 'multipart/form-data'
                 }
             });
@@ -203,7 +199,7 @@ const AIInvestigator = () => {
             console.log('[UPLOAD] Response:', response.data);
             
             // Re-fetch evidence after upload
-            const evidenceResponse = await axios.get(`${API_URL}/evidence/case/${caseId}`, { headers });
+            const evidenceResponse = await API.get(`/evidence/case/${caseId}`);
             const updatedEvidence = evidenceResponse.data || [];
             
             setAvailableEvidence(updatedEvidence);
@@ -280,11 +276,11 @@ const AIInvestigator = () => {
 
             addLog('Sending evidence to AI analysis engine...', 'system');
 
-            const response = await axios.post(`${API_URL}/ai/analyze/${caseId}`, {
+            const response = await API.post(`/ai/analyze/${caseId}`, {
                 evidenceIds,
                 evidenceData,
                 caseName: selectedCase.caseName
-            }, { headers });
+            });
 
             console.log('[AI ANALYSIS] Response:', response.data);
 

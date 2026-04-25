@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, Download, Activity, Clock, ChevronRight, Eye, BarChart3, FileCheck, AlertCircle, Calendar } from 'lucide-react';
 import { useMessages } from '../context/MessageContext';
-import axios from 'axios';
+import API from '../config/api';
 import { API_URL } from '../config/api';
 
 const ReporterDashboard = () => {
@@ -26,7 +26,7 @@ const ReporterDashboard = () => {
 
     const fetchReporterStats = async () => {
         try {
-            const response = await axios.get(`${API_URL}/reports/stats`);
+            const response = await API.get('/reports/stats');
             setStats(response.data);
         } catch (error) {
             console.error('Failed to fetch reporter stats:', error);
@@ -45,7 +45,7 @@ const ReporterDashboard = () => {
 
     const fetchRecentReports = async () => {
         try {
-            const response = await axios.get(`${API_URL}/reports`);
+            const response = await API.get('/reports');
             setRecentReports(response.data.reports || []);
         } catch (error) {
             console.error('Failed to fetch recent reports:', error);
@@ -60,7 +60,7 @@ const ReporterDashboard = () => {
 
     const fetchReportQueue = async () => {
         try {
-            const response = await axios.get(`${API_URL}/reports/queue`);
+            const response = await API.get('/reports/queue');
             setReportQueue(response.data);
         } catch (error) {
             console.error('Failed to fetch report queue:', error);
@@ -80,7 +80,7 @@ const ReporterDashboard = () => {
 
     const handleDownloadReport = async (reportId) => {
         try {
-            const response = await axios.get(`${API_URL}/reports/${reportId}/download`, {
+            const response = await API.get(`/reports/${reportId}/download`, {
                 responseType: 'blob'
             });
             

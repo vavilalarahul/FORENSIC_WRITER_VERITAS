@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Scale, FileText, MessageSquare, AlertCircle, Eye, CheckCircle, Activity } from 'lucide-react';
-import axios from 'axios';
+import API from '../config/api';
 import { API_URL } from '../config/api';
 
 const LegalDashboard = () => {
@@ -17,10 +17,10 @@ const LegalDashboard = () => {
         const fetchLegalData = async () => {
             try {
                 // Fetch cases for legal review
-                const casesResponse = await axios.get(`${API_URL}/cases`);
+                const casesResponse = await API.get('/cases');
                 
                 // Fetch reports
-                const reportsResponse = await axios.get(`${API_URL}/reports`);
+                const reportsResponse = await API.get('/reports');
                 
                 if (casesResponse.data && reportsResponse.data) {
                     const cases = casesResponse.data.cases || [];

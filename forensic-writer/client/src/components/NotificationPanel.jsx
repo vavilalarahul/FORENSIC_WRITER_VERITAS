@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import API from '../config/api';
 import { Bell, Check, X, FileText, MessageSquare, AlertCircle, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config/api';
@@ -65,10 +65,7 @@ const NotificationPanel = () => {
 
     const fetchNotifications = async () => {
         try {
-            const token = localStorage.getItem('forensic-token');
-            const response = await axios.get(`${API_URL}/notifications`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await API.get('/notifications');
             const data = response.data;
             setNotifications(Array.isArray(data.notifications) ? data.notifications : (Array.isArray(data) ? data : []));
         } catch (error) {
@@ -79,10 +76,7 @@ const NotificationPanel = () => {
 
     const handleMarkAllAsRead = async () => {
         try {
-            const token = localStorage.getItem('forensic-token');
-            await axios.patch(`${API_URL}/notifications/read-all`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.patch('/notifications/read-all');
             fetchNotifications();
         } catch (error) {
             console.error('Failed to mark all as read:', error);
@@ -92,10 +86,7 @@ const NotificationPanel = () => {
     const handleDeleteNotification = async (e, notificationId) => {
         e.stopPropagation();
         try {
-            const token = localStorage.getItem('forensic-token');
-            await axios.delete(`${API_URL}/notifications/${notificationId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.delete(`/notifications/${notificationId}`);
             fetchNotifications();
         } catch (error) {
             console.error('Failed to delete message:', error);
@@ -105,10 +96,7 @@ const NotificationPanel = () => {
     const handleNotificationClick = async (notification) => {
         if (!notification.isRead) {
             try {
-                const token = localStorage.getItem('forensic-token');
-                await axios.patch(`${API_URL}/notifications/${notification._id}/read`, {}, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                await API.patch(`/notifications/${notification._id}/read`);
                 setNotifications(prev => prev.map(n => n._id === notification._id ? { ...n, isRead: true } : n));
             } catch (error) {
                 console.error('Failed to mark as read:', error);

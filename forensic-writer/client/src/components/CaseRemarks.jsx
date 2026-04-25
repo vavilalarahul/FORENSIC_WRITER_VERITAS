@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, User, Bot, MessageCircle, Clock, ShieldAlert } from 'lucide-react';
-import axios from 'axios';
+import API from '../config/api';
 import { API_URL } from '../config/api';
 
 const CaseRemarks = ({ caseId }) => {
@@ -22,10 +22,7 @@ const CaseRemarks = ({ caseId }) => {
 
     const fetchRemarks = async () => {
         try {
-            const token = localStorage.getItem('forensic-token');
-            const response = await axios.get(`${API_URL}/comments/${caseId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await API.get(`/comments/${caseId}`);
             setRemarks(response.data);
         } catch (error) {
             console.error('Error fetching remarks:', error);
@@ -43,11 +40,8 @@ const CaseRemarks = ({ caseId }) => {
         if (!newRemark.trim()) return;
 
         try {
-            const token = localStorage.getItem('forensic-token');
-            const response = await axios.post(`${API_URL}/comments/${caseId}`, {
+            const response = await API.post(`/comments/${caseId}`, {
                 message: newRemark
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
 
             setRemarks([...remarks, response.data]);

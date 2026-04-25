@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-    Briefcase, Cpu, Database, Activity, TrendingUp, TrendingDown, 
+import {
+    Briefcase, Cpu, Database, Activity, TrendingUp, TrendingDown,
     PlusCircle, Search, Filter, MoreVertical, Eye, Brain, Clock,
     AlertCircle, CheckCircle, XCircle, Upload
 } from 'lucide-react';
-import axios from 'axios';
+import API from '../config/api';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config/api';
 
@@ -24,13 +24,10 @@ const EnterpriseDashboard = () => {
 
     useEffect(() => {
         const fetchDashboardData = async () => {
-            const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-            const headers = { Authorization: `Bearer ${token}` };
-            
             try {
                 const [statsRes, casesRes] = await Promise.all([
-                    axios.get(`${API_URL}/cases/stats`, { headers }),
-                    axios.get(`${API_URL}/cases`, { headers })
+                    API.get('/cases/stats'),
+                    API.get('/cases')
                 ]);
 
                 if (statsRes.data?.success) {

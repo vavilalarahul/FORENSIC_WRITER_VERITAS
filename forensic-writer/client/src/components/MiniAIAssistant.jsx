@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bot, Send, X, Wand2, Terminal, Mic, MicOff } from 'lucide-react';
-import axios from 'axios';
+import API from '../config/api';
 import { useAuth } from '../context/AuthContext';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -114,12 +114,9 @@ const MiniAIAssistant = () => {
         const detectedRoute = detectRoute(userInput);
 
         try {
-            const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-            const response = await axios.post(`${API_URL}/ai/chat`, {
+            const response = await API.post('/ai/chat', {
                 query: userMsg.text,
                 message: userMsg.text
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
 
             const data = response.data;

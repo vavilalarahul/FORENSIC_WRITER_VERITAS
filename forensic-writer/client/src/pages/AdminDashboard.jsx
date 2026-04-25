@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Shield, Users, Folder, Activity, CheckCircle, Clock, Bell, Settings, X, AlertTriangle, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import API from '../config/api';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config/api';
 
@@ -27,16 +27,13 @@ const AdminDashboard = () => {
     const [remarks, setRemarks] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
 
-    const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-    const headers = { Authorization: `Bearer ${token}` };
-
     const fetchAdminData = useCallback(async () => {
         setLoading(true);
         try {
             const [statsRes, userRes, caseRes] = await Promise.all([
-                axios.get(`${API_URL}/cases/stats`, { headers }),
-                axios.get(`${API_URL}/auth/users`, { headers }),
-                axios.get(`${API_URL}/cases`, { headers })
+                API.get('/cases/stats'),
+                API.get('/auth/users'),
+                API.get('/cases')
             ]);
 
             setStats({
@@ -57,7 +54,7 @@ const AdminDashboard = () => {
         } finally {
             setLoading(false);
         }
-    }, [token]);
+    }, []);
 
     useEffect(() => {
         fetchAdminData();
@@ -67,7 +64,7 @@ const AdminDashboard = () => {
         if (!window.confirm(`Approve case ${caseObj.caseId}?`)) return;
         setActionLoading(true);
         try {
-            await axios.post(`${API_URL}/cases/${caseObj._id}/approve`, {}, { headers });
+            await API.post(`/cases/${caseObj._id}/approve`, {});
             await fetchAdminData();
         } catch (error) {
             alert('Approval failed: ' + error.message);
@@ -86,7 +83,7 @@ const AdminDashboard = () => {
         if (!remarks.trim()) return alert('Please provide remarks for rejection.');
         setActionLoading(true);
         try {
-            await axios.post(`${API_URL}/cases/${selectedCase._id}/reject`, { remarks }, { headers });
+            await API.post(`/cases/${selectedCase._id}/reject`, { remarks });
             setShowRemarksModal(false);
             await fetchAdminData();
         } catch (error) {

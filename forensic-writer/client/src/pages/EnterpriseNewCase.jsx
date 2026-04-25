@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Save, Shield, FileText, User, Calendar, AlertCircle } from 'lucide-react';
-import axios from 'axios';
+import API from '../config/api';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config/api';
 
@@ -28,10 +28,7 @@ const EnterpriseNewCase = () => {
         setError('');
 
         try {
-            const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-            const res = await axios.post(`${API_URL}/cases`, formData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await API.post('/cases', formData);
 
             const createdCase = res.data.case || res.data;
             navigate('../evidence', { state: { forensicCase: createdCase } });

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, User, Mail, Shield, Clock, Hash, BadgeCheck, Camera, X, Upload, Loader2, MoreVertical, Edit2, Save, Award, Activity, Fingerprint, Eye, FileText, Zap, Target, LogOut } from 'lucide-react';
-import axios from 'axios';
+import API from '../config/api';
 import ProfileHeader from '../components/ProfileHeader';
 import ProfileDetails from '../components/ProfileDetails';
 import ProfileStats from '../components/ProfileStats';
@@ -113,7 +113,7 @@ const Profile = () => {
     const handlePresetSelect = async (preset) => {
         setSaving(true);
         try {
-            const res = await axios.put(`${API_URL}/users/avatar/preset`, { avatarKey: preset.key });
+            const res = await API.put('/users/avatar/preset', { avatarKey: preset.key });
             const updatedUser = { ...user, avatar: res.data.avatar };
             login(updatedUser);
             setShowAvatarPicker(false);
@@ -137,7 +137,7 @@ const Profile = () => {
         try {
             const formData = new FormData();
             formData.append('avatar', file);
-            const res = await axios.post(`${API_URL}/users/avatar/upload`, formData);
+            const res = await API.post('/users/avatar/upload', formData);
             const updatedUser = { ...user, avatar: res.data.avatar };
             login(updatedUser);
             setShowAvatarPicker(false);
@@ -152,7 +152,7 @@ const Profile = () => {
     const handleSaveProfile = async () => {
         setSaving(true);
         try {
-            const res = await axios.put(`${API_URL}/users/profile`, editForm);
+            const res = await API.put('/users/profile', editForm);
             setIsEditing(false);
         } catch (err) {
             console.error('Failed to update profile', err);

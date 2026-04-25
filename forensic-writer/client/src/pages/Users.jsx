@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users as UsersIcon, Shield, Search, Mail, Calendar, Activity, Filter, MoreVertical, Edit, Trash2 } from 'lucide-react';
-import axios from 'axios';
+import API from '../config/api';
 import { API_URL } from '../config/api';
 
 const UsersPage = () => {
@@ -12,7 +12,7 @@ const UsersPage = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await axios.get(`${API_URL}/users`);
+                const response = await API.get('/users');
                 setUsers(response.data.users || response.data || []);
             } catch (err) {
                 console.error('Failed to fetch users:', err);

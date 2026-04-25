@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import axios from 'axios';
+import API from '../config/api';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { 
-    ArrowLeft, FileText, Download, Search, Filter, Shield, AlertTriangle, 
+import {
+    ArrowLeft, FileText, Download, Search, Filter, Shield, AlertTriangle,
     Calendar, Hash, User, Trash2, MoreVertical, FolderOpen, Eye, Activity,
     CheckCircle, Clock, TrendingUp
 } from 'lucide-react';
@@ -31,10 +31,7 @@ const Reports = () => {
 
     const fetchReports = async () => {
         try {
-            const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-            const response = await axios.get(`${API_URL}/reports`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await API.get('/reports');
             setReports(response.data.reports || response.data || []);
         } catch (err) {
             console.error('Failed to fetch reports', err);
@@ -53,10 +50,7 @@ const Reports = () => {
 
     const handleDelete = async (id) => {
         try {
-            const token = localStorage.getItem('token') || localStorage.getItem('forensic-token');
-            await axios.delete(`${API_URL}/reports/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.delete(`/reports/${id}`);
             setReports(reports.filter(r => r._id !== id));
             setOpenMenu(null);
         } catch (err) {
@@ -75,14 +69,8 @@ const Reports = () => {
 
     const downloadPDF = async (report) => {
         try {
-            const token = localStorage.getItem('token');
-            const headers = {
-                'Authorization': `Bearer ${token}`
-            };
-
             // Download from server
-            const response = await axios.get(`${API_URL}/reports/${report._id}/download`, {
-                headers,
+            const response = await API.get(`/reports/${report._id}/download`, {
                 responseType: 'blob'
             });
 

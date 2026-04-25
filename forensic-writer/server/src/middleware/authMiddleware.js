@@ -14,7 +14,7 @@ const protect = async (req, res, next) => {
 
       // Get user from the token
       const User = require('../models/User');
-      req.user = await User.findById(decoded.id).select('-password');
+      req.user = await User.findById(decoded.userId).select('-password');
 
       if (!req.user) {
          return res.status(401).json({ message: 'Not authorized, user not found' });
