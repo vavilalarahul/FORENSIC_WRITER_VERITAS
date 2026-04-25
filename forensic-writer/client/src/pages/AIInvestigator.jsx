@@ -146,7 +146,7 @@ const AIInvestigator = () => {
 
             fetchEvidence();
         }
-    }, [selectedCase, token]);
+    }, [selectedCase]);
 
     const handleCaseChange = (caseId) => {
         const selected = cases.find(c => c._id === caseId);
