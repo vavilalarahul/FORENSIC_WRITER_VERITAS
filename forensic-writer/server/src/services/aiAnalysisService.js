@@ -318,13 +318,46 @@ function buildEvidenceJSON(results, caseName) {
   // Add file evidence if present
   if (hasFile) {
     const file = results.files.find(f => !f.imageAnalysis);
+    
+    // Extract IP addresses from anomalies
+    const ipAnomalies = results.totalAnomalies.filter(a => a.type === 'Network Activity');
+    const ipAddresses = [];
+    ipAnomalies.forEach(anomaly => {
+      // Extract IPs from content if available
+      if (file.content) {
+        const ipRegex = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
+        const ips = file.content.match(ipRegex);
+        if (ips) ips.forEach(ip => ipAddresses.push(ip));
+      }
+    });
+    
+    // Extract timestamps from content
+    const timestamps = [];
+    if (file.content) {
+      const timestampRegex = /\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4}|(?:\d{1,2}:){2}\d{2}/g;
+      const foundTimestamps = file.content.match(timestampRegex);
+      if (foundTimestamps) {
+        foundTimestamps.forEach(ts => {
+          if (!timestamps.includes(ts)) timestamps.push(ts);
+        });
+      }
+    }
+    
+    // Count error events from anomalies
+    const errorEvents = results.totalAnomalies.filter(a => 
+      a.keyword && ['error', 'failed', 'exception', 'critical', 'fatal'].includes(a.keyword.toLowerCase())
+    ).length;
+    
+    // Get actual line count
+    const totalLines = file.content ? file.content.split('\n').length : 1;
+    
     evidenceJSON.file_evidence = {
       filename: file.fileName,
-      summary_for_report: `File analyzed with ${results.totalAnomalies.length} anomalies detected`,
-      total_lines: 1,
-      ip_addresses_found: [],
-      error_events: 0,
-      timestamps_found: []
+      summary_for_report: `File analyzed with ${results.totalAnomalies.length} anomalies detected across ${totalLines} lines. Security assessment based on keyword analysis, network activity detection, and temporal analysis.`,
+      total_lines: totalLines,
+      ip_addresses_found: ipAddresses.length > 0 ? ipAddresses : [],
+      error_events: errorEvents,
+      timestamps_found: timestamps.length > 0 ? timestamps.slice(0, 10) : []
     };
   }
 
