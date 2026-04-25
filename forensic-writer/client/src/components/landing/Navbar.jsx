@@ -24,7 +24,7 @@ export function Navbar() {
           <div className="flex items-center gap-2">
             <Shield size={28} className="text-[#3B82F6] animate-pulse" />
             <span className="text-[#E5E7EB] text-xl font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              AutoForensics<span className="text-[#3B82F6]">.AI</span>
+              VERITAS<span className="text-[#3B82F6]">.AI</span>
             </span>
           </div>
 

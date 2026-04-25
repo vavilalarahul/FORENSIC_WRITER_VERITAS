@@ -75,7 +75,7 @@ export function Footer() {
               className="text-[#E5E7EB] font-bold text-lg tracking-tight"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              AutoForensics<span className="text-[#22D3EE]">.AI</span>
+              VERITAS<span className="text-[#22D3EE]">.AI</span>
             </span>
           </div>
 

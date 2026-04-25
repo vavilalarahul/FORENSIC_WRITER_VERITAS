@@ -83,7 +83,7 @@ const Navbar = () => (
           <Shield className="w-5 h-5 text-cyan-bright" />
         </div>
         <span className="text-xl font-bold tracking-tight text-white font-orbitron">
-          AutoForensics<span className="text-cyan-bright">.AI</span>
+          VERITAS<span className="text-cyan-bright">.AI</span>
         </span>
       </div>
       <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
@@ -275,7 +275,7 @@ const Dashboard = () => {
       </section>
 
       <footer className="py-10 text-center text-white/30 text-sm border-t border-white/5">
-        © 2026 AutoForensics.AI. All rights reserved. Professional Forensic Intelligence.
+        © 2026 VERITAS.AI. All rights reserved. Professional Forensic Intelligence.
       </footer>
     </div>
   );
