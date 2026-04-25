@@ -137,7 +137,7 @@ const Signup = () => {
             fontFamily: 'monospace', fontSize: '1.4rem', fontWeight: 700,
             color: '#fff', letterSpacing: '0.1em', margin: 0,
           }}>
-            FORENSIC<span style={{ color: '#22D3EE' }}>.AI</span>
+            VERITAS<span style={{ color: '#22D3EE' }}>.AI</span>
           </h1>
           <p style={{
             color: '#94A3B8', fontSize: '0.75rem', marginTop: '0.25rem',
